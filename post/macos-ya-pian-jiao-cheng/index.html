@@ -1,0 +1,343 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>Macos Vapoursynth Classic and plugins installation guide | yuygfgg的小站</title>
+<meta name="description" content="就是玩">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://yuygfgg.github.io//favicon.ico?v=1770292808616">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://yuygfgg.github.io//styles/main.css">
+
+
+  
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css" />
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://yuygfgg.github.io/">
+        <img class="avatar" src="https://yuygfgg.github.io//images/avatar.png?v=1770292808616" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://yuygfgg.github.io/">
+        <h1 class="site-title">yuygfgg的小站</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">Macos Vapoursynth Classic and plugins installation guide</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2024-08-16</span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <h2 id="vapoursynth-classic">vapoursynth classic</h2>
+<h3 id="setting-up-the-environment">setting up the environment</h3>
+<pre><code class="language-sh">cd ~
+git clone https://github.com/AmusementClub/vapoursynth-classic
+cd ./vapoursynth-classic
+brew update
+brew install automake llvm
+export CC=/opt/homebrew/opt/llvm/bin/clang
+export CXX=/opt/homebrew/opt/llvm/bin/clang++
+export LDFLAGS=&quot;-fuse-ld=lld -L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++&quot;
+export PATH=/opt/homebrew/opt/llvm/bin:$PATH
+export CPATH=/usr/local/include:$CPATH
+export LIBRARY_PATH=/usr/local/lib:$LIBRARY_PATH
+pip install -U cython setuptools wheel
+echo 'export PYTHONPATH=/usr/local/lib/python3.12/site-packages'  &gt;&gt; ~/.zshrc
+source ~/.zshrc
+</code></pre>
+<h3 id="zimg">zimg</h3>
+<pre><code class="language-sh">git clone https://bitbucket.org/the-sekrit-twc/zimg.git --depth 1 --recurse-submodules --shallow-submodules
+pushd zimg
+./autogen.sh
+./configure
+make -j
+sudo make install -j
+popd
+rm -rf zimg
+</code></pre>
+<h3 id="libtool">libtool</h3>
+<pre><code class="language-sh">mv /usr/local/Cellar/libtool /usr/local/Cellar/libtool_1
+brew install libtool
+nano ~/.zshrc
+echo 'PATH=&quot;/opt/homebrew/opt/libtool/libexec/gnubin:$PATH&quot;'  &gt;&gt; ~/.zshrc
+source ~/.zshrc
+</code></pre>
+<h3 id="compile">compile</h3>
+<pre><code class="language-sh">./autogen.sh
+./configure
+CMAKE_ARGS=&quot;-DLLAMA_METAL=on -DCMAKE_OSX_ARCHITECTURES=arm64&quot;
+make CFLAGS+=&quot;$(pkg-config --cflags lqr-1)&quot; \
+LDFLAGS+=&quot;$(pkg-config --libs lqr-1) -L/opt/homebrew/Cellar/liblqr/0.4.3/lib&quot; -j
+sudo make install -j
+ARCHFLAGS=&quot;-arch arm64&quot; pip install . --compile --no-cache-dir
+</code></pre>
+<h3 id="vspreview-rs">vspreview-rs</h3>
+<pre><code class="language-sh">cd ~
+git clone https://github.com/quietvoid/vspreview-rs
+cd vspreview-rs
+cargo build --release
+cp target/release/vspreview-rs /usr/local/bin
+mv /usr/local/bin/vspreview-rs /usr/local/bin/vse-previewer
+</code></pre>
+<h3 id="plugins">plugins</h3>
+<h4 id="bestsource">bestsource</h4>
+<pre><code class="language-sh">cd ~
+git clone https://github.com/vapoursynth/bestsource.git --depth 1 
+--recurse-submodules --shallow-submodules --remote-submodules
+cd bestsource
+</code></pre>
+<p>create native_file.txt,</p>
+<pre><code>[binaries]
+c = 'clang'
+cpp = 'clang++'
+
+[properties]
+c_args = ['-arch', 'arm64']
+cpp_args = ['-arch', 'arm64']
+</code></pre>
+<pre><code class="language-sh">meson setup build --native-file=native_file.txt
+ninja -C build
+ninja -C build install
+</code></pre>
+<h4 id="akarinvsvapoursynth-plugin">AkarinVS/vapoursynth-plugin</h4>
+<pre><code class="language-sh">cd ~
+git clone https://github.com/AkarinVS/vapoursynth-plugin
+cd vapoursynth-plugin
+brew install llvm@15
+echo 'export PATH=&quot;/opt/homebrew/opt/llvm@15/bin:$PATH&quot;' &gt;&gt; ~/.zshrc
+source ~/.zshrc
+</code></pre>
+<p>create native_file.txt,</p>
+<pre><code>[properties]
+c_args = ['-arch', 'arm64']
+cpp_args = ['-arch', 'arm64']
+</code></pre>
+<pre><code class="language-sh">meson setup build --native-file=native_file.txt
+ninja -C build
+ninja -C build install
+</code></pre>
+<p>remove <code>export PATH=&quot;/opt/homebrew/opt/llvm@15/bin:$PATH&quot;</code> in zshrc</p>
+<h4 id="vapoursynth-bm3d">VapourSynth-BM3D</h4>
+<pre><code class="language-sh">cd ~
+git clone https://github.com/HomeOfVapourSynthEvolution/VapourSynth-BM3D
+cd VapourSynth-BM3D
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+</code></pre>
+<p>create native_file.txt,</p>
+<pre><code>[properties]
+c_args = ['-arch', 'arm64']
+cpp_args = ['-arch', 'arm64']
+</code></pre>
+<pre><code>meson build --native-file=native_file.txt
+ninja -C build
+ninja -C build install
+</code></pre>
+<h4 id="vsrepopy">vsrepo.py</h4>
+<pre><code class="language-sh">cd ~
+git clone https://github.com/Stefan-Olt/vsrepo.git
+cd vsrepo
+python vsrepo.py update
+</code></pre>
+<p>however, it seldom work, with the following errors</p>
+<pre><code class="language-sh">python vsrepo.py install vcm 
+Rebuilding dist-info dirs for other python package installers
+No binaries available for darwin-aarch64 in package vcm, skipping installation
+Updating VapourSynth stubs
+Nothing done
+1 packages failed
+</code></pre>
+<h4 id="vs-nlm-ispc">vs-nlm-ispc</h4>
+<pre><code class="language-sh">cd ~
+brew install ispc
+git clone https://github.com/AmusementClub/vs-nlm-ispc.git
+cd vs-nlm-ispc
+cmake -S . -B build -D CMAKE_BUILD_TYPE=Release \
+-D CMAKE_ISPC_INSTRUCTION_SETS=&quot;neon-i32x4&quot; \
+-D CMAKE_ISPC_FLAGS=&quot;--opt=fast-math&quot;
+cmake --build build
+cmake --install build
+</code></pre>
+<h4 id="neo-f3kdb">Neo f3kdb</h4>
+<pre><code class="language-sh">cd ~
+git clone https://github.com/yuygfgg/neo_f3kdb
+cd neo_f3kdb_crossplatform
+export CC=/opt/homebrew/opt/llvm/bin/clang            
+export CXX=/opt/homebrew/opt/llvm/bin/clang++
+cmake -B build/gcc -S . -G &quot;Unix Makefiles&quot; -D_DIR=gcc
+cmake --build build/gcc
+cp ./build/gcc/libneo-f3kdb.dylib /usr/local/lib/vapoursynth/
+</code></pre>
+<h4 id="vapoursynth-eedi2">VapourSynth-EEDI2</h4>
+<pre><code class="language-sh">cd ~
+git clone https://github.com/HomeOfVapourSynthEvolution/VapourSynth-EEDI2
+cd VapourSynth-EEDI2
+./autogen.sh
+./configure
+make -j
+make install
+cp /usr/local/lib/libeedi2.dylib /usr/local/lib/vapoursynth/
+cp /usr/local/lib/libeedi2.la /usr/local/lib/vapoursynth/
+</code></pre>
+<h4 id="vapoursynth-sangnom">vapoursynth-sangnom</h4>
+<pre><code class="language-sh">cd ~
+git clone https://github.com/dubhater/vapoursynth-sangnom
+cd vapoursynth-sangnom
+./autogen.sh
+./configure
+make -j
+make install
+cp /usr/local/lib/libsangnom.0.dylib /usr/local/lib/vapoursynth/
+cp /usr/local/lib/libsangnom.la /usr/local/lib/vapoursynth/
+</code></pre>
+<h4 id="vapoursynth-nnedi3">vapoursynth-nnedi3</h4>
+<pre><code class="language-sh">cd ~
+git clone https://github.com/dubhater/vapoursynth-nnedi3
+cd vapoursynth-nnedi3
+./autogen.sh
+./configure
+make -j
+make install
+sudo cp /usr/local/lib/libnnedi3.dylib /usr/local/lib/vapoursynth/
+sudo cp /usr/local/lib/libnnedi3.la /usr/local/lib/vapoursynth/ 
+</code></pre>
+
+          </div>
+        </div>
+
+        
+      </div>
+
+      
+        
+
+        
+          <div id="disqus_thread"></div>
+        
+      
+
+      <div class="site-footer">
+  <div class="slogan">就是玩</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/yuygfgg/" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://yuygfgg.github.io//atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+  
+
+  
+    <script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+    <script>
+
+    var options = {
+      shortname: 'yuygfgg',
+      apikey: 'RPI8pt1LPmKq45VzN2JiETsBsjebCciC2if4fNVkU3JmgSdGPoYZU13k3p0QRAkL',
+    }
+    if ('') {
+      options.api = ''
+    }
+    var dsqjs = new DisqusJS(options)
+
+    </script>
+  
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,269 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>基于kagemomiji/airsonic-advanced和音流的音乐库搭建 | yuygfgg的小站</title>
+<meta name="description" content="就是玩">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://yuygfgg.github.io//favicon.ico?v=1770292808616">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://yuygfgg.github.io//styles/main.css">
+
+
+  
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css" />
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://yuygfgg.github.io/">
+        <img class="avatar" src="https://yuygfgg.github.io//images/avatar.png?v=1770292808616" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://yuygfgg.github.io/">
+        <h1 class="site-title">yuygfgg的小站</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">基于kagemomiji/airsonic-advanced和音流的音乐库搭建</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2024-05-20</span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <p>首先说一下为什么选择这个名字鬼畜的分支吧：一圈看下来，包括 audiostation，jellyfin，只有这一个支持整个 CD + flac 和 flac 内嵌 CUE 的格式，所以没得选。</p>
+<!-- more -->
+<h2 id="功能展示">功能展示</h2>
+<p>技术细节先退后，看一下完成之后的样子</p>
+<h3 id="音流客户端">音流客户端</h3>
+<p><img src="https://img2.imgtp.com/2024/05/20/rA4IrGc3.png" alt="音流_播放" loading="lazy"><br>
+<img src="https://img2.imgtp.com/2024/05/20/iuWeMS6B.png" alt="音流_专辑页" loading="lazy"><br>
+<img src="https://img2.imgtp.com/2024/05/20/PpbsDj6G.png" alt="音流_主页" loading="lazy"></p>
+<h3 id="网页端">网页端</h3>
+<p>有点简陋，但是功能齐全</p>
+<p><img src="https://img2.imgtp.com/2024/05/20/2ToYTXVq.png" alt="网页_主页" loading="lazy"><br>
+<img src="https://img2.imgtp.com/2024/05/20/HWh7DhDN.png" alt="网页_专辑" loading="lazy"><br>
+<img src="https://img2.imgtp.com/2024/05/20/sDHs9VPV.png" alt="网页_设置" loading="lazy"></p>
+<h3 id="substreamer">substreamer</h3>
+<p>除了音流，这个也很强（特指网页版），相比音流和网页端搜索速度和准确度大幅提高，操作相比音流齐全很多（如查看专辑艺术家），美中不足的是<strong>不支持歌词</strong><br>
+<img src="https://img2.imgtp.com/2024/05/20/ZvKevcJH.png" alt="ss_主页" loading="lazy"></p>
+<h2 id="服务器搭建">服务器搭建</h2>
+<p>非常简单</p>
+<h3 id="下载war包">下载war包</h3>
+<p>kagemomiji/airsonic-advanced <strong>不提供</strong>任何包管理器安装，请自己下载war包。<a href="https://github.com/kagemomiji/airsonic-advanced/releases">github release</a></p>
+<h3 id="运行airsonic-advanced服务端">运行airsonic-advanced服务端</h3>
+<p>这里讲最简单的。</p>
+<ol>
+<li>
+<p>新开一个 screen 会话<br>
+<code>screen</code></p>
+</li>
+<li>
+<p>运行war包<br>
+<code>sudo java -jar airsonic.war</code></p>
+</li>
+<li>
+<p>访问webui<br>
+默认端口是8080，访问webui按照提示操作就行了。需要注意在 settings-&gt;Media folders  打开<code>Enable cue indexing</code> 并且关闭 <code> Hide virtual tracks</code></p>
+</li>
+</ol>
+<h3 id="搭建歌词服务">搭建歌词服务</h3>
+<p>这个服务端自带的歌词非常难用，我从来没成功过。有这么两个替代的歌词 api。</p>
+<h4 id="lrcapi">lrcapi</h4>
+<p>可以考虑使用<a href="https://github.com/HisAtri/LrcApi">lrcapi</a>，但是这个数据不全而且<strong>不支持歌词翻译</strong>，十分蛋疼</p>
+<p>用docker安装。</p>
+<pre><code>docker run -d \
+    -p 28883:28883 \
+    -v /home/user/music:/music \
+    -e API_AUTH=自定义一个鉴权key \
+    hisatri/lrcapi:latest
+</code></pre>
+<h4 id="streammusiclyricsapi">StreamMusicLyricsApi</h4>
+<p>觉得好用请给个star（逃<br>
+我前两天写的<a href="https://github.com/yuygfgg/StreamMusicLyricsApi">StreamMusicLyricsApi</a>，这个使用网易云api，歌词相对多一点。多个候选也有了。</p>
+<p>安装方式简单粗暴。</p>
+<ol>
+<li>拉取仓库<pre><code>git clone https://github.com/yuygfgg/StreamMusicLyricsApi
+cd ./StreamMusicLyricsApi/
+</code></pre>
+</li>
+<li>运行<pre><code> nohup python3 ./lrc.py
+</code></pre>
+默认端口51232，可以在 python 脚本里面改。</li>
+</ol>
+<p>这个通过专辑+歌曲名搜索，然后过滤出时长差 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>&lt;</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">&lt;3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5782em;vertical-align:-0.0391em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">3</span></span></span></span> 秒的，理论上准确率相当高，但是遇到少数情况也会出问题</p>
+<h2 id="客户端">客户端</h2>
+<p>平时听歌可以用音流，支持歌词。但是要搜索找歌得用substreamer</p>
+<h3 id="音流">音流</h3>
+<p>这个最简单。按照 <a href="https://music.aqzscn.cn/">官网</a>就行。</p>
+<p>连接选择subsonic，去设置-自定义API把歌词接口换成刚刚搭建的。</p>
+<h3 id="substreamer-2">substreamer</h3>
+<p>这个比较麻烦。可以用客户端，但是就没法无损串流了。这里讲web客户端。</p>
+<h4 id="安装服务器端">安装服务器端</h4>
+<pre><code>docker run -d \
+   --name substreamer \
+   --restart=unless-stopped \
+   -p 8081:8081 \ 
+   ghenry22/substreamer:latest
+</code></pre>
+<p>然后访问 <code>8081</code>端口，按照提示登录。注意打开 <code>Use Legacy Authentication</code></p>
+<figure data-type="image" tabindex="1"><img src="https://img2.imgtp.com/2024/05/20/cFYJhvtZ.png" alt="ss_login" loading="lazy"></figure>
+<p>登录进去在settings里打开 <code>Improved Search</code></p>
+<figure data-type="image" tabindex="2"><img src="https://img2.imgtp.com/2024/05/20/lI1ODk1v.png" alt="ss_setting_search" loading="lazy"></figure>
+<p>打开无损串流</p>
+<figure data-type="image" tabindex="3"><img src="https://img2.imgtp.com/2024/05/20/58FiKDAu.png" alt="ss_lossless" loading="lazy"></figure>
+<h2 id="杂项">杂项</h2>
+<p>理论上这样就可以enjoy了，不过还有几个小的trick<br>
+<img src="https://img2.imgtp.com/2024/05/20/4P1SezHJ.png" alt="截屏2024-05-20 20.27.38.png" loading="lazy"></p>
+<h3 id="lyrics">Lyrics</h3>
+<p>觉得好用请给个star（逃 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>×</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">\times 2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">×</span><span class="mord">2</span></span></span></span><br>
+是的还是歌词相关。这玩意可以帮你无需音流的 VIP 就可以用 macOS 状态栏歌词。原理是利用系统的播放信息去网易云匹配歌词，然后显示。匹配不准也可以手动改。<br>
+<img src="https://img2.imgtp.com/2024/05/20/BWNt9ir5.png" alt="截屏2024-05-20 20.34.15.png" loading="lazy"></p>
+<p>具体请看<a href="https://github.com/yuygfgg/Lyrics">github</a><br>
+暂时不提供release，请自行用Xcode编译</p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://yuygfgg.github.io/post/zai-s390x-jia-gou-de-ubuntu2204-shang-an-zhuang-tailscale/">
+              <h3 class="post-title">
+                下一篇：在s390x架构的ubuntu22.04上安装tailscale
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+        
+
+        
+          <div id="disqus_thread"></div>
+        
+      
+
+      <div class="site-footer">
+  <div class="slogan">就是玩</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/yuygfgg/" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://yuygfgg.github.io//atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+  
+
+  
+    <script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+    <script>
+
+    var options = {
+      shortname: 'yuygfgg',
+      apikey: 'RPI8pt1LPmKq45VzN2JiETsBsjebCciC2if4fNVkU3JmgSdGPoYZU13k3p0QRAkL',
+    }
+    if ('') {
+      options.api = ''
+    }
+    var dsqjs = new DisqusJS(options)
+
+    </script>
+  
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,359 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>BD整理流程 | yuygfgg的小站</title>
+<meta name="description" content="就是玩">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://yuygfgg.github.io//favicon.ico?v=1770292808616">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://yuygfgg.github.io//styles/main.css">
+
+
+  
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css" />
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://yuygfgg.github.io/">
+        <img class="avatar" src="https://yuygfgg.github.io//images/avatar.png?v=1770292808616" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://yuygfgg.github.io/">
+        <h1 class="site-title">yuygfgg的小站</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">BD整理流程</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2024-10-21</span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <ol>
+<li>提取音轨</li>
+</ol>
+<pre><code>ffmpeg -i 00001.m2ts -c:a pcm_s24le ~/audio01.wav
+</code></pre>
+<ol start="2">
+<li>压缩flac</li>
+</ol>
+<pre><code>seq -w 01 12 | parallel -j 12 ffmpeg -i &quot;audio{}.wav&quot; -c:a flac -sample_fmt s32 -compression_level 12 &quot;output{}.flac&quot;
+</code></pre>
+<ol start="3">
+<li>合并视频，音频</li>
+</ol>
+<pre><code>for i in {01..12}; do
+  mkvmerge -o &quot;final_output$i.mkv&quot; --language 0:ja &quot;video$i.mkv&quot; &quot;output$i.flac&quot;
+done
+</code></pre>
+<ol start="4">
+<li>创建文件夹结构</li>
+</ol>
+<pre><code>#!/bin/bash
+
+# 遍历 01 到 12 的数字
+for i in {01..12}; do
+    # 创建对应的 E01 到 E12 文件夹
+    dir=&quot;E$i&quot;
+    mkdir -p &quot;$dir&quot;
+    
+    # 匹配规则：确保数字前后都不是其他数字
+    # 匹配包含相应编号的 .mkv 文件，并确保编号前后不是数字
+    mv *[^0-9]&quot;$i&quot;[^0-9]*.mkv &quot;$dir&quot;/ 2&gt;/dev/null
+    mv *[^0-9]&quot;$i&quot;.mkv &quot;$dir&quot;/ 2&gt;/dev/null  # 处理编号在文件末尾的情况
+
+    # 移动 subtitles 文件夹中包含相应编号的 .ass 文件，确保编号前后不是数字
+    mv subtitles/*[^0-9]&quot;$i&quot;[^0-9]*.ass &quot;$dir&quot;/ 2&gt;/dev/null
+    mv subtitles/*[^0-9]&quot;$i&quot;.ass &quot;$dir&quot;/ 2&gt;/dev/null  # 处理编号在文件末尾的情况
+
+    # 移动 chapters 文件夹中包含相应编号的 .txt 文件，确保编号前后不是数字
+    mv chapters/*[^0-9]&quot;$i&quot;[^0-9]*.txt &quot;$dir&quot;/ 2&gt;/dev/null
+    mv chapters/*[^0-9]&quot;$i&quot;.txt &quot;$dir&quot;/ 2&gt;/dev/null  # 处理编号在文件末尾的情况
+done
+</code></pre>
+<ol start="5">
+<li>合并文件</li>
+</ol>
+<pre><code>#!/bin/bash
+
+# 检查依赖工具是否安装
+if ! command -v mkvextract &amp;&gt; /dev/null; then
+    echo &quot;错误：mkvextract 未安装，请安装后重试。&quot;
+    exit 1
+fi
+
+if ! command -v mkvmerge &amp;&gt; /dev/null; then
+    echo &quot;错误：mkvmerge 未安装，请安装后重试。&quot;
+    exit 1
+fi
+
+# 定义要处理的文件夹列表
+folders=$(find . -maxdepth 1 -type d -name 'E[0-9][0-9]')
+
+if [ -z &quot;$folders&quot; ]; then
+    echo &quot;错误：当前目录下没有 E01-E12 文件夹。&quot;
+    exit 1
+fi
+
+# 遍历每个 Exx 文件夹
+for dir in $folders; do
+    echo &quot;检查文件夹 $dir ...&quot;
+
+    # 检查文件和文件夹数量
+    mkv_count=$(find &quot;$dir&quot; -maxdepth 1 -type f -name '*.mkv' | wc -l)
+    ass_count=$(find &quot;$dir&quot; -maxdepth 1 -type f -name '*.ass' | wc -l)
+    txt_count=$(find &quot;$dir&quot; -maxdepth 1 -type f -name '*.txt' | wc -l)
+    fonts_dir=&quot;$dir/subsetted_fonts&quot;
+
+    if [ ! -d &quot;$fonts_dir&quot; ]; then
+        fonts_count=0
+    else
+        fonts_count=1
+    fi
+
+    if [ $mkv_count -ne 1 ] || [ $ass_count -ne 2 ] || [ $txt_count -ne 1 ] || [ $fonts_count -ne 1 ]; then
+        echo &quot;错误：文件夹 $dir 内文件结构不符合要求。&quot;
+        exit 1
+    fi
+
+    # 获取文件名
+    mkv_file=$(find &quot;$dir&quot; -maxdepth 1 -type f -name '*.mkv')
+    txt_file=$(find &quot;$dir&quot; -maxdepth 1 -type f -name '*.txt')
+    chs_ass=$(find &quot;$dir&quot; -maxdepth 1 -type f -name '*chs_jpn*.ass')
+    cht_ass=$(find &quot;$dir&quot; -maxdepth 1 -type f -name '*cht_jpn*.ass')
+
+    # 检查字幕文件是否存在
+    if [ -z &quot;$chs_ass&quot; ] || [ -z &quot;$cht_ass&quot; ]; then
+        echo &quot;错误：文件夹 $dir 缺少必要的字幕文件。&quot;
+        exit 1
+    fi
+
+    # 提取视频和音频流的信息
+    echo &quot;正在处理文件夹 $dir ...&quot;
+
+    # 创建提取目录
+    extract_dir=&quot;$dir/extract_temp&quot;
+    mkdir -p &quot;$extract_dir&quot;
+
+    # 提取视频和音频轨道
+    mkvextract tracks &quot;$mkv_file&quot; 0:&quot;$extract_dir/video.hevc&quot; 1:&quot;$extract_dir/audio.flac&quot;
+
+    if [ $? -ne 0 ]; then
+        echo &quot;错误：提取视频或音频失败。&quot;
+        exit 1
+    fi
+
+    # 删除原始 mkv 文件
+    rm &quot;$mkv_file&quot;
+
+    # 检查 subsetted_fonts 文件夹内的字体文件
+    font_files=()
+    while IFS= read -r -d '' font; do
+        font_files+=(&quot;$font&quot;)
+    done &lt; &lt;(find &quot;$fonts_dir&quot; -type f -print0)
+
+    if [ ${#font_files[@]} -eq 0 ]; then
+        echo &quot;错误：文件夹 $dir 的 subsetted_fonts 文件夹内没有找到任何字体文件。&quot;
+        exit 1
+    fi
+
+    # 准备附件参数
+    attachments=()
+    for font in &quot;${font_files[@]}&quot;; do
+        # 根据文件扩展名设置 MIME 类型
+        extension=&quot;${font##*.}&quot;
+        case &quot;$extension&quot; in
+            ttf)
+                mime_type=&quot;font/ttf&quot;
+                ;;
+            otf)
+                mime_type=&quot;font/otf&quot;
+                ;;
+            *)
+                echo &quot;警告：未识别的字体文件类型 $font，跳过。&quot;
+                continue
+                ;;
+        esac
+        attachments+=(--attachment-mime-type &quot;$mime_type&quot; --attach-file &quot;$font&quot;)
+    done
+
+    # 合并新的 mkv 文件
+    mkvmerge -o &quot;$dir/new_$(basename &quot;$mkv_file&quot;)&quot; \
+        --language 0:und &quot;$extract_dir/video.hevc&quot; \
+        --language 0:ja &quot;$extract_dir/audio.flac&quot; \
+        --language 0:zh-ch --track-name 0:&quot;简日双语&quot; --default-track 0:yes &quot;$chs_ass&quot; \
+        --language 0:zh-tw --track-name 0:&quot;繁日双语&quot; --default-track 0:no &quot;$cht_ass&quot; \
+        --chapters &quot;$txt_file&quot; \
+        &quot;${attachments[@]}&quot;
+
+    if [ $? -ne 0 ]; then
+        echo &quot;错误：合并 MKV 文件失败。&quot;
+        exit 1
+    fi
+
+    # 删除提取的临时文件
+    rm -r &quot;$extract_dir&quot;
+
+    # 重命名新文件为原始文件名
+    mv &quot;$dir/new_$(basename &quot;$mkv_file&quot;)&quot; &quot;$mkv_file&quot;
+
+    echo &quot;文件夹 $dir 处理完成。&quot;
+
+done
+
+echo &quot;所有操作已完成。&quot;
+</code></pre>
+<ol start="6">
+<li>把视频拷出来</li>
+</ol>
+<pre><code>mkdir -p result
+find E* -name &quot;final_output*.mkv&quot; -exec cp {} result/ \;
+</code></pre>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://yuygfgg.github.io/post/ji-yu-kagemomijiairsonic-advanced-he-yin-liu-de-yin-le-ku-da-jian/">
+              <h3 class="post-title">
+                下一篇：基于kagemomiji/airsonic-advanced和音流的音乐库搭建
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+        
+
+        
+          <div id="disqus_thread"></div>
+        
+      
+
+      <div class="site-footer">
+  <div class="slogan">就是玩</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/yuygfgg/" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://yuygfgg.github.io//atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+  
+
+  
+    <script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+    <script>
+
+    var options = {
+      shortname: 'yuygfgg',
+      apikey: 'RPI8pt1LPmKq45VzN2JiETsBsjebCciC2if4fNVkU3JmgSdGPoYZU13k3p0QRAkL',
+    }
+    if ('') {
+      options.api = ''
+    }
+    var dsqjs = new DisqusJS(options)
+
+    </script>
+  
+
+
+
+
+  </body>
+</html>

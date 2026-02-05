@@ -1,0 +1,387 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>Arm64 Mac 压片指北 | yuygfgg的小站</title>
+<meta name="description" content="就是玩">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://yuygfgg.github.io//favicon.ico?v=1770292808616">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://yuygfgg.github.io//styles/main.css">
+
+
+  
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css" />
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://yuygfgg.github.io/">
+        <img class="avatar" src="https://yuygfgg.github.io//images/avatar.png?v=1770292808616" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://yuygfgg.github.io/">
+        <h1 class="site-title">yuygfgg的小站</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">Arm64 Mac 压片指北</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2024-12-12</span>
+            
+          </div>
+          <div class="post-content" v-pre>
+            <h1 id="arm64-mac-压片指北">Arm64 Mac 压片指北</h1>
+<h2 id="为什么">为什么？</h2>
+<p><s>可能因为我是抖M吧（（</s></p>
+<h2 id="工具">工具</h2>
+<p><s>俗话说，工欲善其事必先利其器。。。。。 废话省略</s></p>
+<p>以下将分为这几个部分</p>
+<ol>
+<li>vapoursynth 框架</li>
+<li>常用 vapoursynth 插件及脚本</li>
+<li>编码器 （x264, x265）</li>
+</ol>
+<h3 id="vapoursynth-的安装与调教">vapoursynth 的安装与调教</h3>
+<p>Vaporusynth（以下有可能简称为VS） 是一个开源的frame server。具体定义这里不再赘述。</p>
+<p>它有一个积极开发的主分支（目前最新为R70），和由 amusement club 维护的 classic 分支。这两个分支都能很好地完成压片的任务，可以随意选用；这片文章也会同时涉猎两者。</p>
+<h4 id="upstream-的安装">upstream 的安装</h4>
+<p>在 macos 上安装最新 VS 非常简单，直接使用 brew 包管理器即可。</p>
+<pre><code class="language-bash">brew install vapoursynth
+</code></pre>
+<p>然后就可以试着运行 vspipe</p>
+<pre><code class="language-bash">vspipe
+</code></pre>
+<p>如果打印出了详细的使用说明，那么恭喜你安装成功了！</p>
+<h4 id="classic-分支的安装">classic 分支的安装</h4>
+<p>相比 upstream, classic 对于旧脚本兼容性更好，且代码较为稳定，可以进行魔改。然而，兼任旧脚本也就意味着牺牲部分新功能，这需要自行斟酌。</p>
+<p>安装方式相对较为复杂，不过下面的命令可以基本照抄</p>
+<pre><code class="language-bash">cd ~
+git clone https://github.com/AmusementClub/vapoursynth-classic
+cd ./vapoursynth-classic
+brew update
+brew install automake llvm
+export CC=/opt/homebrew/opt/llvm/bin/clang
+export CXX=/opt/homebrew/opt/llvm/bin/clang++
+export LDFLAGS=&quot;-fuse-ld=lld -L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++&quot;
+export PATH=/opt/homebrew/opt/llvm/bin:$PATH
+export CPATH=/usr/local/include:$CPATH
+export LIBRARY_PATH=/usr/local/lib:$LIBRARY_PATH
+pip install -U cython setuptools wheel
+echo 'export PYTHONPATH=/usr/local/lib/python3.12/site-packages'  &gt;&gt; ~/.zshrc （这里换成适合自己的，如conda环境等) 注意⚠️ 这会使得 conda 失效，请自行处理；我没有更好的解决方案，还请大佬不惜赐教
+source ~/.zshrc
+
+git clone https://bitbucket.org/the-sekrit-twc/zimg.git --depth 1 --recurse-submodules --shallow-submodules
+pushd zimg
+./autogen.sh
+./configure
+make -j
+sudo make install -j
+popd
+rm -rf zimg
+
+mv /usr/local/Cellar/libtool /usr/local/Cellar/libtool_1
+brew install libtool
+
+echo 'PATH=&quot;/opt/homebrew/opt/libtool/libexec/gnubin:$PATH&quot;'  &gt;&gt; ~/.zshrc
+source ~/.zshrc
+
+./autogen.sh
+./configure
+CMAKE_ARGS=&quot;-DLLAMA_METAL=on -DCMAKE_OSX_ARCHITECTURES=arm64&quot;
+make CFLAGS+=&quot;$(pkg-config --cflags lqr-1)&quot; LDFLAGS+=&quot;$(pkg-config --libs lqr-1) -L/opt/homebrew/Cellar/liblqr/0.4.3/lib&quot; -j 这里 liblqr 版本换成适合的
+sudo make install -j
+ARCHFLAGS=&quot;-arch arm64&quot; pip install . --compile --no-cache-dir
+</code></pre>
+<p>然后同样运行 vspipe 进行测试，不再赘述</p>
+<p>PS. 有勇气的朋友可以尝试我基于 classic 进行少量修改的版本，理论上会有略好的性能。只须将仓库地址换成 <code>https://github.com/yuygfgg/vapoursynth-classic</code> 即可。</p>
+<h4 id="vspreview">vspreview</h4>
+<p>这是用于预览 VS 脚本的程序。它同样有多个版本。下面列举2个版本，其他版本请按需使用。</p>
+<h5 id="jet版">JET版</h5>
+<p>这个版本配合 upstream vapoursynth 使用。</p>
+<pre><code>pip install vspreview
+</code></pre>
+<h4 id="amusement-club版">Amusement club版</h4>
+<p>配合 classic 使用。</p>
+<pre><code class="language-bash">
+git clone https://github.com/AkarinVS/vapoursynth-preview
+
+cd vapoursynth-preview
+
+pip install -r requirements.txt
+
+</code></pre>
+<p>然后把 vspreview 文件夹拷贝到 $PYTHONPATH 下即可。</p>
+<h3 id="插件脚本的安装">插件，脚本的安装</h3>
+<h4 id="插件目录-脚本目录">插件目录 &amp; 脚本目录</h4>
+<p>插件目录是放置插件的地方（废话）：对于 upstream，它在 <code>/opt/homebrew/lib/vapoursynth</code>; 对于 classic，它在 <code>/usr/local/lib/vapoursynth</code></p>
+<p>（其实上面讲的不准确，不过对于照抄上面命令的人应该够用了，自行修改的应该也有能力搞清楚）</p>
+<p>脚本目录则非常简单，就是 <code>$PYTHONPATH</code></p>
+<h4 id="通用的插件安装方式">通用的插件安装方式</h4>
+<p>这部分能让 80% 的插件以 75% 的效率走起来。</p>
+<ul>
+<li>step1: 找到那个插件的 github 地址，并 clone</li>
+<li>step2: <code>meson setup build &amp;&amp; ninja -C build install</code> <strong>classic 用户注意：有时链接器会报错，请确保使用的是和编译 VS 时一样的链接器 （即重新运行上面的一堆 <code>export</code> 命令）</strong><br>
+（构建系统有时可能是 cmake, 具体请参照 readme）</li>
+<li>step3: 观察输出，解决可能存在的编译问题，输入密码授予安装权限（仅 classic 需要）。少数情况可能会安装错目录，可以自行复制到插件目录。</li>
+<li>step4: enjoy~</li>
+</ul>
+<h4 id="高性能的插件安装方式">高性能的插件安装方式</h4>
+<p>这部分能让 99% 的插件以 95% 的效率跑起来。</p>
+<p>这部分内容极为复杂，所以只是简略记录一下思路，还请见谅。</p>
+<h5 id="simd">simd</h5>
+<p>绝大多数 VS 插件都只实现了 X86 的 simd 加速；然而，新 Mac 都是基于 Arm 架构的，所以需要将 SSE, AVX 等 x86 指令集转换为 NEON, SVE 等 arm 指令集。这个操作非常机械化，但是同时需要一些经验和 GPT 余额，所以这里简单带过，只列举几个有用的工具。</p>
+<ol>
+<li><code>sse2neon.h</code></li>
+</ol>
+<p>正如它的名字，这是用于将 sse 转换为 neon 的库。使用方法是将 sse 的头文件换成这个。</p>
+<ol start="2">
+<li>simde</li>
+</ol>
+<p>全称 SIMD Everywhere; 可以将几乎任意一种 SIMD 转换为本机支持的，不过使用上略微繁琐。</p>
+<p>除此以外，还需要对 CPUID 等函数进行修改；</p>
+<p><strong>注意：sse2neon 只能转换 128bit 的 simd，而最新的 M4 已经支持 SVE512。如果需要最佳性能请始终选择 simde</strong></p>
+<h5 id="编译优化">编译优化</h5>
+<p>有一部分插件在编写时完全没有考虑非 X86 平台，导致一些跨平台的优化也没有应用。最典型的如编译器优化，这是在一切平台都可以进行的，然而部分插件在编写时只启用了 X86 的优化，导致 Arm 等平台白白流失数十倍的性能。</p>
+<p>方法非常简单，修改 <code>meson.build</code>，手动加入相关逻辑（chatgpt 乐意代劳）</p>
+<p>例如：</p>
+<pre><code class="language-meson">  if host_machine.cpu_family().startswith('x86')
+    add_project_arguments('-mfpmath=sse', '-msse2', language : 'cpp') # 没有 Arm 平台相关编译优化
+  endif
+
+</code></pre>
+<p>修改后：</p>
+<pre><code class="language-meson">  if host_machine.cpu_family().startswith('x86')
+    add_project_arguments('-mfpmath=sse', '-msse2', language : 'cpp')
+  elif host_machine.cpu_family().startswith('arm') or host_machine.cpu_family() == 'aarch64'
+    add_project_arguments('-O3', '-fno-math-errno', '-fno-trapping-math', language: 'cpp') # 加入了 Arm 平台也适用的通用优化。
+  endif
+</code></pre>
+<h4 id="有没有现成的">有没有现成的？</h4>
+<p>还真有。</p>
+<p>请到 https://github.com/yuygfgg/Macos_vapoursynth_plugins 获取编译好的常用插件。<s>遇到问题（即使是自己编译的）也最好能来吱一声</s></p>
+<p>使用方法请参考 CI 配置。由于只是简单的文件复制粘贴和脚本运行，这里不再赘述。</p>
+<h3 id="编码器">编码器</h3>
+<p>我是学艺不精，所以这里只介绍 x264 和 x265; <s>AV1 出门我也不知道往哪拐，去我也不知道哪。</s></p>
+<h4 id="原版">原版</h4>
+<p>同样，先安装原版。方便起见，直接安装 ffmpeg 即可</p>
+<pre><code class="language-bash">brew install ffmpeg
+brew install chromaprint
+brew uninstall --ignore-dependencies ffmpeg
+
+# 上面三行用于绕过循环引用
+
+brew tap homebrew-ffmpeg/ffmpeg
+brew install homebrew-ffmpeg/ffmpeg/ffmpeg --with-dvd --with-game-music-emu --with-jack --with-jpeg-xl --with-libaribcaption --with-libbluray --with-libbs2b --with-libcaca --with-libdvdnav --with-libdvdread --with-libgsm --with-libmodplug --with-libopenmpt --with-libplacebo --with-librist --with-librsvg --with-libsoxr --with-libssh --with-libtensorflow --with-libvidstab --with-libvmaf --with-libxml2 --with-opencore-amr --with-openh264 --with-openjpeg --with-openssl --with-openvino --with-rav1e --with-rtmpdump --with-rubberband --with-speex --with-srt --with-svt-av1 --with-tensorflow --with-tesseract --with-two-lame --with-webp --with-xvid --with-zeromq --with-zimg --HEAD
+</code></pre>
+<p>这里我们安装尽可能多的库，以备不时之需。</p>
+<h4 id="x265-yuuki-asuna">x265-Yuuki-Asuna</h4>
+<p>X265的异变版本。</p>
+<p>我修改了一些不兼容 macos 的部分</p>
+<pre><code class="language-bash">git clone https://github.com/yuygfgg/x265-Yuuki-Asuna
+cd x265-Yuuki-Asuna/build/linux #你没看错，就是linux
+sh multilib.sh
+sudo make install
+brew unlink x265
+</code></pre>
+<p>运行 x265 可能会有报错，此时请尝试 Macos_vapoursynth_plugins/tools/checkdylib.py （可能需要sudo）</p>
+<p>有时可能会报错几个 VS 头文件找不到，简单办法是直接去修改 <code>source/input/vpy.h</code>。运行时报找不到 VS 库也去这里改。</p>
+<ul>
+<li>classic : <code>/usr/local/include/vapoursynth</code>    &amp; <code>/usr/local/lib/libvapoursynth-script.dylib</code></li>
+<li>upstream: <code>/opt/homebrew/include/vapoursynth</code> &amp; <code>/opt/homebrew/lib/libvapoursynth-script.dylib</code></li>
+</ul>
+<p><s>我知道这很糙但是懒得改了（（</s></p>
+<p>相比 brew 安装的版本，这个能提供一些性能提升。这是由于 homebrew 在 M1 上编译所有包，而 x265 暂时不支持运行时 CPU 探测，所以无法利用新的 CPU 特性 （如 I8MM, SVE）</p>
+<h4 id="x264-mod-by-patman">x264-Mod-by-Patman</h4>
+<p>这是一个修改版的 X264。 X264的修改版众多，这里只是随便列举一个。</p>
+<pre><code class="language-bash">git clone https://github.com/Patman86/x264-Mod-by-Patman
+cd x264-Mod-by-Patman
+./configure --disable-avs --enable-lto --disable-ffms --disable-swscale --disable-lavf  --disable-gpac  --disable-lsmash # 按需修改
+make -j
+sudo make install
+brew unlink x264
+</code></pre>
+<p>比较难以安装的工具就是这些了，祝你幸福（</p>
+<p>其余的常用工具还请利用 GPT 和 google，篇幅限制不可能全部列举。</p>
+<p>一些不消耗性能的不妨使用 wine。</p>
+<pre><code class="language-bash">brew install --cask --no-quarantine gcenx/wine/wine-crossover
+
+wine /path/to/.exe
+</code></pre>
+<h2 id="使用">使用</h2>
+<p>有了工具，还要会用。这里简单介绍一下独属于 Mac 平台的几个坑点。</p>
+<h3 id="vsort相关">vsort相关</h3>
+<h4 id="fp16-ml_program">fp16, ml_program?</h4>
+<p>这是非常复杂的问题，具体请参考 https://github.com/AmusementClub/vs-mlrt/pull/116</p>
+<p>简而言之，<code>ML_program enables fp16 computation on ANE, instead of allocating all to CPU. However, the MLprogram is not well-supported currently, supporting much less EPs than regular NeuralNetwork.</code></p>
+<p>在不考虑 EP 支持差异情况下的大致性能：</p>
+<p>ml_program=1 + fp16=True: ANE 120% usage, 10.52fps<br>
+ml_program=1 + fp16=False: GPU 97% usage, 5.40fps<br>
+ml_program=0 + fp16=True: CPU 100% usage, ~0fps<br>
+ml_program=0 + fp16=False: ANE 114% usage, 10.23fps</p>
+<p>script:</p>
+<pre><code class="language-python">import vapoursynth as vs
+from vapoursynth import core
+import vsmlrt
+
+src = core.lsmas.LWLibavSource('/path/to/source').resize.Spline36(1920//2, 1080//2, format=vs.RGBS, matrix_in_s=&quot;709&quot;) # same performance if format=RGBH
+fin = vsmlrt.Waifu2x(clip=src, noise=-1, scale=2, backend=vsmlrt.Backend.ORT_COREML(ml_program=1, fp16=True), model=vsmlrt.Waifu2xModel.anime_style_art_rgb) # anime_style_art_rgb uses simplest Ops, almost all supported by tested backends
+
+fin.set_output(0)
+</code></pre>
+<h4 id="为什么我的硬盘莫名其妙的满了">为什么我的硬盘莫名其妙的满了？</h4>
+<p>请参考 https://github.com/AmusementClub/vs-mlrt/issues/107。</p>
+<p>总之，得手动清理（（（</p>
+<h3 id="opencl-相关">opencl 相关</h3>
+<h4 id="为什么-2">为什么...</h4>
+<p>apple 已经放弃了 opencl，所以啥问题都不意外。我只能保证，在 <code>M2pro, Macos 15.1.1 (24B91)</code> 上，nnedi3cl 和 eedi3m 是正常工作的，而 KNLM 有问题。</p>
+<p>有消息表明，M4 上 nnedi3cl 也出现了问题 （好在可以 workaround）：https://github.com/yuygfgg/Macos_vapoursynth_plugins/issues/3</p>
+<hr>
+<p>好的，Mac 视频压制的准备工作基本上完成了，是不是非常简单呢（迫真</p>
+<p>上面的内容一定有大量的疏漏，加上我本人不善常编程，请各位大佬多多指教！</p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://yuygfgg.github.io/post/bd-zheng-li-liu-cheng/">
+              <h3 class="post-title">
+                下一篇：BD整理流程
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+        
+
+        
+          <div id="disqus_thread"></div>
+        
+      
+
+      <div class="site-footer">
+  <div class="slogan">就是玩</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/yuygfgg/" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://yuygfgg.github.io//atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+  
+
+  
+    <script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+    <script>
+
+    var options = {
+      shortname: 'yuygfgg',
+      apikey: 'RPI8pt1LPmKq45VzN2JiETsBsjebCciC2if4fNVkU3JmgSdGPoYZU13k3p0QRAkL',
+    }
+    if ('') {
+      options.api = ''
+    }
+    var dsqjs = new DisqusJS(options)
+
+    </script>
+  
+
+
+
+
+  </body>
+</html>
